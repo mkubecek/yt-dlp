@@ -14,7 +14,6 @@ from ..utils import (
     sanitized_Request,
     traverse_obj,
     unescapeHTML,
-    update_url_query,
     urlencode_postdata,
     USER_AGENTS,
 )
@@ -102,8 +101,10 @@ class CeskaTelevizeIE(InfoExtractor):
             playlist_description = playlist_description.replace('\xa0', ' ')
 
         if parsed_url.path.startswith('/porady/'):
-            next_data = self._parse_json(self._search_regex(r'<script[^>]+id=[\'"]__NEXT_DATA__[\'"][^>]+>([^<]*)</script>', webpage, 'IDEC id', playlist_id), playlist_id)
+            next_data = self._parse_json(unescapeHTML(self._search_regex(r'<script[^>]+id=[\'"]__NEXT_DATA__[\'"][^>]+>([^<]*)</script>', webpage, 'IDEC id', playlist_id)), playlist_id)
             idec = traverse_obj(next_data, ('props', 'pageProps', 'data', 'show', 'idec')) or traverse_obj(next_data, ('props', 'pageProps', 'data', 'mediaMeta', 'idec'))
+            if not idec:
+                raise ExtractorError('Failed to find IDEC id')
             webpage = self._download_webpage(self._IFRAME_HASH_URL, playlist_id)
             webpage = self._download_webpage(self._IFRAME_URL, playlist_id, query={'hash': webpage, 'origin': 'iVysilani', 'autoStart': 'true', 'IDEC': idec})
 
