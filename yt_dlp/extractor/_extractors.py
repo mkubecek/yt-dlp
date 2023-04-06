@@ -298,7 +298,10 @@ from .cbc import (
     CBCGemPlaylistIE,
     CBCGemLiveIE,
 )
-from .cbs import CBSIE
+from .cbs import (
+    CBSIE,
+    ParamountPressExpressIE,
+)
 from .cbslocal import (
     CBSLocalIE,
     CBSLocalArticleIE,
@@ -716,6 +719,10 @@ from .hidive import HiDiveIE
 from .historicfilms import HistoricFilmsIE
 from .hitbox import HitboxIE, HitboxLiveIE
 from .hitrecord import HitRecordIE
+from .hollywoodreporter import (
+    HollywoodReporterIE,
+    HollywoodReporterPlaylistIE,
+)
 from .holodex import HolodexIE
 from .hotnewhiphop import HotNewHipHopIE
 from .hotstar import (
@@ -1390,6 +1397,7 @@ from .periscope import (
     PeriscopeIE,
     PeriscopeUserIE,
 )
+from .pgatour import PGATourIE
 from .philharmoniedeparis import PhilharmonieDeParisIE
 from .phoenix import PhoenixIE
 from .photobucket import PhotobucketIE
@@ -1954,6 +1962,7 @@ from .traileraddict import TrailerAddictIE
 from .triller import (
     TrillerIE,
     TrillerUserIE,
+    TrillerShortIE,
 )
 from .trilulilu import TriluliluIE
 from .trovo import (
@@ -2334,8 +2343,6 @@ from .xxxymovies import XXXYMoviesIE
 from .yahoo import (
     YahooIE,
     YahooSearchIE,
-    YahooGyaOPlayerIE,
-    YahooGyaOIE,
     YahooJapanNewsIE,
 )
 from .yandexdisk import YandexDiskIE

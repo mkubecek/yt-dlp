@@ -4,6 +4,7 @@ import hashlib
 
 from .common import InfoExtractor
 from ..utils import (
+    ExtractorError,
     OnDemandPagedList,
     int_or_none,
     mimetype2ext,
@@ -14,7 +15,7 @@ from ..utils import (
 
 class IwaraIE(InfoExtractor):
     IE_NAME = 'iwara'
-    _VALID_URL = r'https?://(?:www\.)?iwara\.tv/video/(?P<id>[a-zA-Z0-9]+)'
+    _VALID_URL = r'https?://(?:www\.|ecchi\.)?iwara\.tv/videos?/(?P<id>[a-zA-Z0-9]+)'
     _TESTS = [{
         # this video cannot be played because of migration
         'only_matching': True,
@@ -75,7 +76,13 @@ class IwaraIE(InfoExtractor):
 
     def _real_extract(self, url):
         video_id = self._match_id(url)
-        video_data = self._download_json(f'http://api.iwara.tv/video/{video_id}', video_id)
+        video_data = self._download_json(f'http://api.iwara.tv/video/{video_id}', video_id, expected_status=lambda x: True)
+        errmsg = video_data.get('message')
+        # at this point we can actually get uploaded user info, but do we need it?
+        if errmsg == 'errors.privateVideo':
+            self.raise_login_required('Private video. Login if you have permissions to watch')
+        elif errmsg:
+            raise ExtractorError(f'Iwara says: {errmsg}')
 
         return {
             'id': video_id,
