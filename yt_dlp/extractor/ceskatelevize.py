@@ -57,7 +57,7 @@ class CeskaTelevizeIE(InfoExtractor):
         'url': 'https://www.ceskatelevize.cz/zive/sport/',
         'only_matching': True,
         'info_dict': {
-            'id': 422,
+            'id': '422',
             'ext': 'mp4',
             'title': r're:^ČT Sport \d{4}-\d{2}-\d{2} \d{2}:\d{2}$',
             'thumbnail': r're:^https?://.*\.jpg',
