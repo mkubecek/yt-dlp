@@ -312,6 +312,7 @@ from .brilliantpala import (
 )
 from .bundesliga import BundesligaIE
 from .bundestag import BundestagIE
+from .bunnycdn import BunnyCdnIE
 from .businessinsider import BusinessInsiderIE
 from .buzzfeed import BuzzFeedIE
 from .byutv import BYUtvIE
@@ -335,6 +336,7 @@ from .canal1 import Canal1IE
 from .canalalpha import CanalAlphaIE
 from .canalc2 import Canalc2IE
 from .canalplus import CanalplusIE
+from .canalsurmas import CanalsurmasIE
 from .caracoltv import CaracolTvPlayIE
 from .cartoonnetwork import CartoonNetworkIE
 from .cbc import (
@@ -454,7 +456,10 @@ from .curiositystream import (
     CuriosityStreamIE,
     CuriosityStreamSeriesIE,
 )
-from .cwtv import CWTVIE
+from .cwtv import (
+    CWTVIE,
+    CWTVMovieIE,
+)
 from .cybrary import (
     CybraryCourseIE,
     CybraryIE,
@@ -491,10 +496,6 @@ from .daum import (
 from .daystar import DaystarClipIE
 from .dbtv import DBTVIE
 from .dctp import DctpTvIE
-from .deezer import (
-    DeezerAlbumIE,
-    DeezerPlaylistIE,
-)
 from .democracynow import DemocracynowIE
 from .detik import DetikEmbedIE
 from .deuxm import (
@@ -505,6 +506,7 @@ from .dfb import DFBIE
 from .dhm import DHMIE
 from .digitalconcerthall import DigitalConcertHallIE
 from .digiteka import DigitekaIE
+from .digiview import DigiviewIE
 from .discogs import DiscogsReleasePlaylistIE
 from .disney import DisneyIE
 from .dispeak import DigitallySpeakingIE
@@ -681,6 +683,7 @@ from .foxnews import (
 )
 from .foxsports import FoxSportsIE
 from .fptplay import FptplayIE
+from .francaisfacile import FrancaisFacileIE
 from .franceinter import FranceInterIE
 from .francetv import (
     FranceTVIE,
@@ -837,6 +840,7 @@ from .icareus import IcareusIE
 from .ichinanalive import (
     IchinanaLiveClipIE,
     IchinanaLiveIE,
+    IchinanaLiveVODIE,
 )
 from .idolplus import IdolPlusIE
 from .ign import (
@@ -899,6 +903,7 @@ from .ivi import (
     IviIE,
 )
 from .ivideon import IvideonIE
+from .ivoox import IvooxIE
 from .iwara import (
     IwaraIE,
     IwaraPlaylistIE,
@@ -956,7 +961,10 @@ from .kick import (
 )
 from .kicker import KickerIE
 from .kickstarter import KickStarterIE
-from .kika import KikaIE
+from .kika import (
+    KikaIE,
+    KikaPlaylistIE,
+)
 from .kinja import KinjaEmbedIE
 from .kinopoisk import KinoPoiskIE
 from .kommunetv import KommunetvIE
@@ -1034,6 +1042,7 @@ from .limelight import (
     LimelightMediaIE,
 )
 from .linkedin import (
+    LinkedInEventsIE,
     LinkedInIE,
     LinkedInLearningCourseIE,
     LinkedInLearningIE,
@@ -1049,6 +1058,7 @@ from .livestream import (
 )
 from .livestreamfails import LivestreamfailsIE
 from .lnk import LnkIE
+from .loco import LocoIE
 from .loom import (
     LoomFolderIE,
     LoomIE,
@@ -1056,6 +1066,7 @@ from .loom import (
 from .lovehomeporn import LoveHomePornIE
 from .lrt import (
     LRTVODIE,
+    LRTRadioIE,
     LRTStreamIE,
 )
 from .lsm import (
@@ -1488,6 +1499,10 @@ from .paramountplus import (
 )
 from .parler import ParlerIE
 from .parlview import ParlviewIE
+from .parti import (
+    PartiLivestreamIE,
+    PartiVideoIE,
+)
 from .patreon import (
     PatreonCampaignIE,
     PatreonIE,
@@ -1734,6 +1749,7 @@ from .roosterteeth import (
     RoosterTeethSeriesIE,
 )
 from .rottentomatoes import RottenTomatoesIE
+from .roya import RoyaLiveIE
 from .rozhlas import (
     MujRozhlasIE,
     RozhlasIE,
@@ -1768,7 +1784,6 @@ from .rtvcplay import (
 from .rtve import (
     RTVEALaCartaIE,
     RTVEAudioIE,
-    RTVEInfantilIE,
     RTVELiveIE,
     RTVETelevisionIE,
 )
@@ -1877,6 +1892,8 @@ from .skyit import (
     SkyItVideoIE,
     SkyItVideoLiveIE,
     TV8ItIE,
+    TV8ItLiveIE,
+    TV8ItPlaylistIE,
 )
 from .skylinewebcams import SkylineWebcamsIE
 from .skynewsarabia import (
@@ -1890,6 +1907,7 @@ from .slutload import SlutloadIE
 from .smotrim import SmotrimIE
 from .snapchat import SnapchatSpotlightIE
 from .snotr import SnotrIE
+from .softwhiteunderbelly import SoftWhiteUnderbellyIE
 from .sohu import (
     SohuIE,
     SohuVIE,
@@ -1979,6 +1997,7 @@ from .storyfire import (
     StoryFireSeriesIE,
     StoryFireUserIE,
 )
+from .streaks import StreaksIE
 from .streamable import StreamableIE
 from .streamcz import StreamCZIE
 from .streetvoice import StreetVoiceIE
@@ -2218,6 +2237,10 @@ from .tvplay import (
     TVPlayIE,
 )
 from .tvplayer import TVPlayerIE
+from .tvw import (
+    TvwIE,
+    TvwTvChannelsIE,
+)
 from .tweakers import TweakersIE
 from .twentymin import TwentyMinutenIE
 from .twentythreevideo import TwentyThreeVideoIE
@@ -2341,10 +2364,6 @@ from .viewlift import (
     ViewLiftIE,
 )
 from .viidea import ViideaIE
-from .viki import (
-    VikiChannelIE,
-    VikiIE,
-)
 from .vimeo import (
     VHXEmbedIE,
     VimeoAlbumIE,
@@ -2389,10 +2408,15 @@ from .voxmedia import (
     VoxMediaIE,
     VoxMediaVolumeIE,
 )
+from .vrsquare import (
+    VrSquareChannelIE,
+    VrSquareIE,
+    VrSquareSearchIE,
+    VrSquareSectionIE,
+)
 from .vrt import (
     VRTIE,
     DagelijkseKostIE,
-    KetnetIE,
     Radio1BeIE,
     VrtNUIE,
 )
