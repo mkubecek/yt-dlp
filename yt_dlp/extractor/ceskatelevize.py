@@ -144,17 +144,16 @@ class CeskaTelevizeIE(InfoExtractor):
                 sidp = self._search_regex(r'https?://(?:www\.)?ceskatelevize\.cz/(?:ivysilani|porady|zive)/([0-9]+)-', url, playlist_id, default=playlist_id)
             if not idec:
                 raise ExtractorError('Failed to find IDEC id')
+
             sidp = sidp.rsplit('-')[0]
             query = {'origin': 'iVysilani', 'autoStart': 'true', 'sidp': sidp, type_: idec}
             webpage = self._download_webpage(
                 'https://player.ceskatelevize.cz/',
                 playlist_id, note='Downloading player', query=query)
-            playlistpage_url = 'https://www.ceskatelevize.cz/ivysilani/ajax/get-client-playlist/'
+            playlistpage_url = 'https://api.ceskatelevize.cz/video/v1/playlist-vod/v1/stream-data/media/external/' + idec
             data = {
-                'playlist[0][type]': type_,
-                'playlist[0][id]': idec,
-                'requestUrl': parsed_url.path,
-                'requestSource': 'iVysilani',
+                'canPlayDrm': 'false',
+                'streamType': 'dash',
             }
         elif parsed_url.path == '/' and parsed_url.fragment == 'live':
             if self._search_regex(r'(?s)<section[^>]+id=[\'"]live[\'"][^>]+data-ctcomp-data=\'([^\']+)\'[^>]*>', webpage, 'live video player', default=None):
@@ -214,10 +213,7 @@ class CeskaTelevizeIE(InfoExtractor):
         entries = []
 
         for user_agent in (None, USER_AGENTS['Safari']):
-            req = Request(playlistpage_url, data=urlencode_postdata(data))
-            req.headers['Content-type'] = 'application/x-www-form-urlencoded'
-            req.headers['x-addr'] = '127.0.0.1'
-            req.headers['X-Requested-With'] = 'XMLHttpRequest'
+            req = Request(playlistpage_url, query=data)
             if user_agent:
                 req.headers['User-Agent'] = user_agent
             req.headers['Referer'] = url
@@ -227,18 +223,7 @@ class CeskaTelevizeIE(InfoExtractor):
             if not playlistpage:
                 continue
 
-            playlist_url = playlistpage.get('url')
-            if playlist_url:
-                if playlist_url == 'error_region':
-                    raise ExtractorError(NOT_AVAILABLE_STRING, expected=True)
-                req = Request(urllib.parse.unquote(playlist_url))
-                req.headers['Referer'] = url
-                playlist = self._download_json(req, playlist_id, fatal=False)
-                if not playlist:
-                    continue
-                playlist = playlist.get('playlist')
-            else:
-                playlist = traverse_obj(playlistpage, ('RESULT', 'playlist'))
+            playlist = traverse_obj(playlistpage, 'streams')
 
             if not isinstance(playlist, list):
                 continue
@@ -247,32 +232,29 @@ class CeskaTelevizeIE(InfoExtractor):
 
             for num, item in enumerate(playlist):
                 formats = []
-                for format_id, stream_url in item.get('streamUrls', {}).items():
-                    if 'playerType=flash' in stream_url:
-                        stream_formats = self._extract_m3u8_formats(
-                            stream_url, playlist_id, 'mp4', 'm3u8_native',
-                            m3u8_id=f'hls-{format_id}', fatal=False)
-                    else:
-                        stream_formats = self._extract_mpd_formats(
-                            stream_url, playlist_id,
-                            mpd_id=f'dash-{format_id}', fatal=False)
-                    if 'drmOnly=true' in stream_url:
-                        for f in stream_formats:
-                            f['has_drm'] = True
-                    # See https://github.com/ytdl-org/youtube-dl/issues/12119#issuecomment-280037031
-                    if format_id == 'audioDescription':
-                        for f in stream_formats:
-                            f['source_preference'] = -10
-                    formats.extend(stream_formats)
+                mpd_url = item.get('url')
+
+                if 'streamType=flash' in mpd_url:
+                    stream_formats = self._extract_m3u8_formats(
+                        mpd_url, playlist_id, 'mp4', 'm3u8_native',
+                        m3u8_id=f'hls-{num}', fatal=False)
+                else:
+                    stream_formats = self._extract_mpd_formats(
+                        mpd_url, playlist_id,
+                        mpd_id=f'dash-{num}', fatal=False)
+                if 'drmOnly=true' in mpd_url:
+                    for f in stream_formats:
+                        f['has_drm'] = True
+                formats.extend(stream_formats)
 
                 if user_agent and len(entries) == playlist_len:
                     entries[num]['formats'].extend(formats)
                     continue
 
-                item_id = str_or_none(item.get('id') or item['assetId'])
-                title = item.get('title') or 'live'
+                item_id = str_or_none(item.get('id') or str(num))
+                title = playlistpage.get('episodeTitle') or playlistpage.get('title')
 
-                duration = float_or_none(item.get('duration'))
+                duration = float_or_none(playlistpage.get('duration'))
                 thumbnail = item.get('previewImageUrl')
 
                 subtitles = {}
@@ -297,9 +279,9 @@ class CeskaTelevizeIE(InfoExtractor):
                     'live_status': 'is_live' if is_live else 'not_live',
                 })
 
-        if len(entries) == 1:
-            return entries[0]
-        return self.playlist_result(entries, playlist_id, playlist_title, playlist_description)
+            if len(entries) == 1:
+                return entries[0]
+            return self.playlist_result(entries, playlist_id, playlist_title, playlist_description)
 
     def _get_subtitles(self, episode_id, subs):
         original_subtitles = self._download_webpage(
