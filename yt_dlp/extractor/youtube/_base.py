@@ -104,7 +104,6 @@ INNERTUBE_CLIENTS = {
         },
         'INNERTUBE_CONTEXT_CLIENT_NAME': 1,
         'SUPPORTS_COOKIES': True,
-        'SUPPORTS_AD_PLAYBACK_CONTEXT': True,
         **WEB_PO_TOKEN_POLICIES,
     },
     # Safari UA returns pre-merged video+audio 144p/240p/360p/720p/1080p HLS formats
@@ -118,7 +117,6 @@ INNERTUBE_CLIENTS = {
         },
         'INNERTUBE_CONTEXT_CLIENT_NAME': 1,
         'SUPPORTS_COOKIES': True,
-        'SUPPORTS_AD_PLAYBACK_CONTEXT': True,
         **WEB_PO_TOKEN_POLICIES,
     },
     'web_embedded': {
@@ -223,16 +221,17 @@ INNERTUBE_CLIENTS = {
         },
         'PLAYER_PO_TOKEN_POLICY': PlayerPoTokenPolicy(required=False, recommended=True),
     },
-    # YouTube Kids videos aren't returned on this client for some reason
+    # "Made for kids" videos aren't available with this client
+    # Using a clientVersion>1.65 may return SABR streams only
     'android_vr': {
         'INNERTUBE_CONTEXT': {
             'client': {
                 'clientName': 'ANDROID_VR',
-                'clientVersion': '1.71.26',
+                'clientVersion': '1.65.10',
                 'deviceMake': 'Oculus',
                 'deviceModel': 'Quest 3',
                 'androidSdkVersion': 32,
-                'userAgent': 'com.google.android.apps.youtube.vr.oculus/1.71.26 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip',
+                'userAgent': 'com.google.android.apps.youtube.vr.oculus/1.65.10 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip',
                 'osName': 'Android',
                 'osVersion': '12L',
             },
@@ -264,34 +263,6 @@ INNERTUBE_CLIENTS = {
             # HLS Livestreams require POT 30 seconds in
             StreamingProtocol.HLS: GvsPoTokenPolicy(
                 required=True,
-                recommended=True,
-                not_required_with_player_token=True,
-            ),
-        },
-        'PLAYER_PO_TOKEN_POLICY': PlayerPoTokenPolicy(required=False, recommended=True),
-        'REQUIRE_JS_PLAYER': False,
-    },
-    'ios_downgraded': {
-        'INNERTUBE_CONTEXT': {
-            'client': {
-                'clientName': 'IOS',
-                'clientVersion': '19.49.7',
-                'deviceMake': 'Apple',
-                'deviceModel': 'iPhone16,2',
-                'userAgent': 'com.google.ios.youtube/19.49.7 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)',
-                'osName': 'iPhone',
-                'osVersion': '17.5.1.21F90',
-            },
-        },
-        'INNERTUBE_CONTEXT_CLIENT_NAME': 5,
-        'GVS_PO_TOKEN_POLICY': {
-            StreamingProtocol.HTTPS: GvsPoTokenPolicy(
-                required=True,
-                recommended=True,
-                not_required_with_player_token=True,
-            ),
-            StreamingProtocol.HLS: GvsPoTokenPolicy(
-                required=False,
                 recommended=True,
                 not_required_with_player_token=True,
             ),
@@ -379,20 +350,6 @@ INNERTUBE_CLIENTS = {
         },
         'INNERTUBE_CONTEXT_CLIENT_NAME': 75,
     },
-    # This client now requires sign-in for every video
-    # It was previously an age-gate workaround for videos that were `playable_in_embed`
-    # It may still be useful if signed into an EU account that is not age-verified
-    'tv_embedded': {
-        'INNERTUBE_CONTEXT': {
-            'client': {
-                'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
-                'clientVersion': '2.0',
-            },
-        },
-        'INNERTUBE_CONTEXT_CLIENT_NAME': 85,
-        'REQUIRE_AUTH': True,
-        'SUPPORTS_COOKIES': True,
-    },
 }
 
 
@@ -411,7 +368,7 @@ def short_client_name(client_name):
 
 def _fix_embedded_ytcfg(ytcfg):
     ytcfg['INNERTUBE_CONTEXT'].setdefault('thirdParty', {}).update({
-        'embedUrl': 'https://www.youtube.com/',  # Can be any valid URL
+        'embedUrl': 'https://www.reddit.com/',  # Can be any valid non-YouTube URL
     })
 
 
@@ -1000,16 +957,25 @@ class YoutubeBaseInfoExtractor(InfoExtractor):
         url = {
             'mweb': 'https://m.youtube.com',
             'web': 'https://www.youtube.com',
+            'web_safari': 'https://www.youtube.com',
             'web_music': 'https://music.youtube.com',
+            'web_creator': 'https://studio.youtube.com',
             'web_embedded': f'https://www.youtube.com/embed/{video_id}?html5=1',
             'tv': 'https://www.youtube.com/tv',
         }.get(client)
         if not url:
             return {}
+
+        default_ytcfg = self._get_default_ytcfg(client)
+
+        if default_ytcfg['REQUIRE_AUTH'] and not self.is_authenticated:
+            return {}
+
         webpage = self._download_webpage_with_retries(
             url, video_id, note=f'Downloading {client.replace("_", " ").strip()} client config',
-            headers=traverse_obj(self._get_default_ytcfg(client), {
+            headers=traverse_obj(default_ytcfg, {
                 'User-Agent': ('INNERTUBE_CONTEXT', 'client', 'userAgent', {str}),
+                'Referer': ('INNERTUBE_CONTEXT', 'thirdParty', 'embedUrl', {str}),
             }))
 
         ytcfg = self.extract_ytcfg(video_id, webpage) or {}
